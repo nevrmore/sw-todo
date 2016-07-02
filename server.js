@@ -1,31 +1,24 @@
 var express = require('express');
+var bodyParser = require('body-parser');
 var app = express();
 var PORT = process.env.PORT || 3000;
 var todos = []; // to store all todo items, this is the model of the app
-todos = [{
-	id: 1,
-	description: 'Some random description',
-	completed: false
-}, {
-	id: 2,
-	description: 'Watch movie with Bran.',
-	completed: false
-}, {
-	id: 3,
-	description: 'This is todo item number 3.',
-	completed: true
-}];
+var todoNextId = 1; // increment our todo id each time we add a new todo item to the list so that they all have unique id
+
+
+// set up middleware
+app.use(bodyParser.json());
 
 app.get('/', function (req, res) {
 	res.send("Todo API Root");
 });
 
-// To get all pending todos
+// To GET all pending todos
 app.get('/todos', function (req, res) {
 	res.json(todos);  // this will convert todos JS array to json and send back to the caller
 });
 
-// To get a specific todo
+// To GET a specific todo
 app.get('/todos/:id', function (req, res) {
 	
 	//res.send("Asking for todo with id of " + todoId);
@@ -50,6 +43,20 @@ app.get('/todos/:id', function (req, res) {
 
 });
 
+// POST - to add a new todo item
+app.post('/todos/', function (req, res) {
+	var body = req.body;
+
+	body.id = todoNextId++; // set the id and then increment
+
+	todos.push(body); // push the new todo item 
+
+	console.log(todos);
+
+	// console.log('description: ' + body.description);
+
+	res.json(body);
+});
 
 app.listen(PORT, function () {
 	console.log("Express listening on port " + PORT + "...");
