@@ -23,15 +23,11 @@ app.get('/todos/', function (req, res) {
 	console.log(queryParams);
 
 	if (_.has(queryParams, 'completed')) {
-		// has a query paramter named completed
+		// has a query parameter named completed
 		if (queryParams.completed === 'true') {
-
-			filteredTodos = _.where(filteredTodos, {completed: true})
-
+			filteredTodos = _.where(filteredTodos, {completed: true});
 		} else if (queryParams.completed === 'false') {
-
-			filteredTodos = _.where(filteredTodos, {completed: false})
-
+			filteredTodos = _.where(filteredTodos, {completed: false});
 		} else {
 			// completed has invalid value, i.e. something other than true of false
 			return res.status(400).json({
@@ -39,6 +35,14 @@ app.get('/todos/', function (req, res) {
 			});
 		}
 	}
+
+	if (_.has(queryParams, 'q') && queryParams.q.length > 0) {
+		// has a query parameter named q
+		filteredTodos = _.filter(filteredTodos, function (todoItem) {
+			return todoItem.description.indexOf(queryParams.q) > -1;
+		});
+	}
+
 	res.json(filteredTodos); // this will convert todos JS array to json and send back to the caller
 });
 
