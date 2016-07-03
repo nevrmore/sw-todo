@@ -15,9 +15,31 @@ app.get('/', function (req, res) {
 	res.send('Welcome to my todo app');
 });
 
-// GET - to get all todos
+// GET - to get all todos or based on query parameter passed
 app.get('/todos/', function (req, res) {
-	res.json(allTodos); // this will convert todos JS array to json and send back to the caller
+	var queryParams = req.query;
+	var filteredTodos = allTodos;
+
+	console.log(queryParams);
+
+	if (_.has(queryParams, 'completed')) {
+		// has a query paramter named completed
+		if (queryParams.completed === 'true') {
+
+			filteredTodos = _.where(filteredTodos, {completed: true})
+
+		} else if (queryParams.completed === 'false') {
+
+			filteredTodos = _.where(filteredTodos, {completed: false})
+
+		} else {
+			// completed has invalid value, i.e. something other than true of false
+			return res.status(400).json({
+				"message": "Invalid request. Please provide a boolean value."
+			});
+		}
+	}
+	res.json(filteredTodos); // this will convert todos JS array to json and send back to the caller
 });
 
 // GET - to get an item from it's id
@@ -82,7 +104,7 @@ app.put('/todos/:id', function (req, res) {
 	}
 
 	console.log(validAttributes);
-	
+
 	// Came here means everything turned out to be alright
 	_.extend(matchedTodo, validAttributes);
 	res.status(200).json({
