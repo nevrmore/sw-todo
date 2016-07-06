@@ -74,6 +74,7 @@ app.get('/todos/', function (req, res) {
 // GET - to get an item from it's id
 app.get('/todos/:id', function (req, res) {
 
+    // Database method
     var idToFetch = parseInt(req.params.id);
 
     // search for known ids
@@ -105,7 +106,7 @@ app.post('/todos/', function (req, res) {
     var itemToAdd = _.pick(req.body, 'description', 'completed'); // to store only the required attr
     itemToAdd.description = itemToAdd.description.trim(); // trim the trailing and leading white spaces
 
-    // WITH DB METHOD
+    // Database method
     db.Todo.create(itemToAdd).then(function (todoItem) {
         res.json(todoItem.toJSON()); // send back new data
     }, function (error) {
@@ -168,17 +169,41 @@ app.put('/todos/:id', function (req, res) {
 
 // DELETE - to remove an item from the todo item list
 app.delete('/todos/:id', function (req, res) {
-    var idToFetch = parseInt(req.params.id, 10);
-    var matchedTodo = _.findWhere(allTodos, {id: idToFetch});
 
-    if (matchedTodo) {
-        allTodos = _.without(allTodos, matchedTodo);
-        res.json(matchedTodo);
-    } else {
-        res.status(404).json({
-            "error": "No item with that id was found."
+    // Database method
+    var idToDelete = parseInt(req.params.id, 10);
+
+    db.Todo.destroy({
+        where: {
+            id: idToDelete
+        }
+    }).then(function (rowsDeleted) {
+        if (rowsDeleted === 1) {
+            // res.send("Row is deleted");
+            res.status(204).send(); // 204 means 200 but nothing to send back
+        } else {
+            res.status(404).json({
+                error: 'No todo with id'
+            });
+        }
+    }, function (error) {
+        res.status(500).json({
+            error: error
         });
-    }
+    });
+
+    // Non database method
+    // var idToFetch = parseInt(req.params.id, 10);
+    // var matchedTodo = _.findWhere(allTodos, {id: idToFetch});
+
+    // if (matchedTodo) {
+    //     allTodos = _.without(allTodos, matchedTodo);
+    //     res.json(matchedTodo);
+    // } else {
+    //     res.status(404).json({
+    //         "error": "No item with that id was found."
+    //     });
+    // }
 });
 
 db.sequelize.sync().then(function () {
