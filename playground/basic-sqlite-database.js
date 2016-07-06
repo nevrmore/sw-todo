@@ -25,33 +25,41 @@ sequelize.sync({
 
     console.log('Everything is synced.');
 
-    Todo.create({
-        description: "Take out trash"
-    }).then(function (todo) {
-        console.log('Finished!');
-        return Todo.create({
-            description: "Water the plants",
-            completed: false
-        });
-    }).then(function () {
-        // return Todo.findById(1); // 
-        return Todo.findAll({
-            where: {
-                description: {
-                    $like: '%trash%'
-                }
-            }
-        });
+    // Todo.findById(3).then(function (todo) {
+    //     if (todo) {
+    //         console.log(todo.toJSON());
+    //     } else {
+    //         console.log("Todo not found");
+    //     }
+    // });
 
-    }).then(function (todos) {
-        if (todos) {
-            todos.forEach(function (todo) {
-                console.log(todo.toJSON());
-            });
-        } else {
-            console.log("No todo item found with that id");
-        }
-    }).catch(function (errorObj) {
-        console.log(errorObj);
-    });
+
+    // Todo.create({
+    //     description: "Take out trash"
+    // }).then(function (todo) {
+    //     console.log('Finished!');
+    //     return Todo.create({
+    //         description: "Water the plants",
+    //         completed: false
+    //     });
+    // }).then(function () {
+    //     // return Todo.findById(1); // 
+    //     return Todo.findAll({
+    //         where: {
+    //             description: {
+    //                 $like: '%trash%'
+    //             }
+    //         }
+    //     });
+    // }).then(function (todos) {
+    //     if (todos) {
+    //         todos.forEach(function (todo) {
+    //             console.log(todo.toJSON());
+    //         });
+    //     } else {
+    //         console.log("No todo item found with that id");
+    //     }
+    // }).catch(function (errorObj) {
+    //     console.log(errorObj);
+    // });
 });

@@ -10,8 +10,8 @@ var sequelize = new Sequelize(undefined, undefined, undefined, {
 
 var db = {};
 
-db.todo = sequelize.import(__dirname + '/models/todo.js');
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
+db.Todo = sequelize.import(__dirname + '/models/todo.js'); // todo model
+db.sequelize = sequelize; // the sequelize instance
+db.Sequelize = Sequelize; // the sequelize library
 
 module.exports = db;

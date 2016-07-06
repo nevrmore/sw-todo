@@ -18,45 +18,85 @@ app.get('/', function (req, res) {
 
 // GET - to get all todos or based on query parameter passed
 app.get('/todos/', function (req, res) {
-    var queryParams = req.query;
-    var filteredTodos = allTodos;
+    
+    // Database method
+    var query = req.query;
+    var where = {};
 
-    console.log(queryParams);
-
-    if (_.has(queryParams, 'completed')) {
-        // has a query parameter named completed
-        if (queryParams.completed === 'true') {
-            filteredTodos = _.where(filteredTodos, {completed: true});
-        } else if (queryParams.completed === 'false') {
-            filteredTodos = _.where(filteredTodos, {completed: false});
-        } else {
-            // completed has invalid value, i.e. something other than true of false
-            return res.status(400).json({
-                "message": "Invalid request. Please provide a boolean value."
-            });
-        }
+    if (_.has(query, 'completed') && query.completed === 'true') {
+        where.completed = true;
+    } else if (_.has(query, 'completed') && query.completed === 'false') {
+        where.completed = false;
     }
 
-    if (_.has(queryParams, 'q') && queryParams.q.length > 0) {
-        // has a query parameter named q
-        filteredTodos = _.filter(filteredTodos, function (todoItem) {
-            return todoItem.description.indexOf(queryParams.q) > -1;
-        });
+    if (_.has(query, 'q') && query.q.length > 0) {
+        where.description = {
+            $like: '%' + query.q + "%"
+        };
     }
 
-    res.json(filteredTodos); // this will convert todos JS array to json and send back to the caller
+    db.Todo.findAll({where: where}).then(function (todosArray) {
+        res.json(todosArray);
+    }, function (error) {
+        res.status(500).json(error);
+    });
+
+    // Non Database method
+    // var queryParams = req.query;
+    // var filteredTodos = allTodos;
+
+    // console.log(queryParams);
+
+    // if (_.has(queryParams, 'completed')) {
+    //     // has a query parameter named completed
+    //     if (queryParams.completed === 'true') {
+    //         filteredTodos = _.where(filteredTodos, {completed: true});
+    //     } else if (queryParams.completed === 'false') {
+    //         filteredTodos = _.where(filteredTodos, {completed: false});
+    //     } else {
+    //         // completed has invalid value, i.e. something other than true of false
+    //         return res.status(400).json({
+    //             "message": "Invalid request. Please provide a boolean value."
+    //         });
+    //     }
+    // }
+
+    // if (_.has(queryParams, 'q') && queryParams.q.length > 0) {
+    //     // has a query parameter named q
+    //     filteredTodos = _.filter(filteredTodos, function (todoItem) {
+    //         return todoItem.description.indexOf(queryParams.q) > -1;
+    //     });
+    // }
+
+    // res.json(filteredTodos); // this will convert todos JS array to json and send back to the caller
 });
 
 // GET - to get an item from it's id
 app.get('/todos/:id', function (req, res) {
-    var idToFetch = parseInt(req.params.id);
-    var matchedTodo = _.findWhere(allTodos, {id: idToFetch});
 
-    if (matchedTodo) {
-        res.json(matchedTodo);
-    } else {
-        res.status(404).send();
-    }
+    var idToFetch = parseInt(req.params.id);
+
+    // search for known ids
+    db.Todo.findById(idToFetch).then(function (todoItem) {
+        if (!!todoItem) {
+            res.json(todoItem.toJSON());
+        } else {
+            res.status(404).send();
+        }
+    }).catch(function (error) {
+        console.log(error);
+        res.status(500).send();
+    });
+
+    // Non database method
+    // var idToFetch = parseInt(req.params.id);
+    // var matchedTodo = _.findWhere(allTodos, {id: idToFetch});
+
+    // if (matchedTodo) {
+    //     res.json(matchedTodo);
+    // } else {
+    //     res.status(404).send();
+    // }
 });
 
 // POST - to add a new todo item
@@ -66,8 +106,8 @@ app.post('/todos/', function (req, res) {
     itemToAdd.description = itemToAdd.description.trim(); // trim the trailing and leading white spaces
 
     // WITH DB METHOD
-    db.todo.create(itemToAdd).then(function (todo) {
-        res.json(todo.toJSON());
+    db.Todo.create(itemToAdd).then(function (todoItem) {
+        res.json(todoItem.toJSON()); // send back new data
     }, function (error) {
         return res.status(400).json(error);
     });
